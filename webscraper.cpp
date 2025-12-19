@@ -76,12 +76,21 @@ string request(string word){
                                                 );
 
         res_code=curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
+        
         if(res_code!=CURLE_OK){
             return curl_easy_strerror(res_code);
         }
-       
-
+        long http_code = 0;
+        // Get the HTTP status code (200, 404, 500, etc.)
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+        if(http_code == 404) {
+            curl_easy_cleanup(curl);
+            return "Error: Word not found (404).";
+        } else if (http_code != 200) {
+            curl_easy_cleanup(curl);
+            return "Error: Server returned status " + to_string(http_code);
+        }
+        curl_easy_cleanup(curl);
     }
     return result;
 }
